@@ -1,0 +1,89 @@
+name: Test basic usage with resource changes
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "true"
+
+      - name: Assert comment-body contains plan summary
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: comment-body output is empty"
+            exit 1
+          fi
+          echo "PASS: comment-body is non-empty"
+
+      - name: Assert comment-body contains create section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "aws_instance.web"; then
+            echo "FAIL: expected 'aws_instance.web' in comment-body"
+            exit 1
+          fi
+          echo "PASS: create resource found in comment-body"
+
+      - name: Assert comment-body contains delete section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "aws_security_group.old"; then
+            echo "FAIL: expected 'aws_security_group.old' in comment-body"
+            exit 1
+          fi
+          echo "PASS: delete resource found in comment-body"
+
+      - name: Assert comment-body contains update section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "aws_s3_bucket.data"; then
+            echo "FAIL: expected 'aws_s3_bucket.data' in comment-body"
+            exit 1
+          fi
+          echo "PASS: update resource found in comment-body"
+
+      - name: Assert comment-body contains replace section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "aws_db_instance.main"; then
+            echo "FAIL: expected 'aws_db_instance.main' in comment-body"
+            exit 1
+          fi
+          echo "PASS: replace resource found in comment-body"
+
+      - name: Assert comment-body contains Terraform Plan summary line
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "Terraform Plan:"; then
+            echo "FAIL: expected 'Terraform Plan:' in comment-body"
+            exit 1
+          fi
+          echo "PASS: Terraform Plan summary found in comment-body"

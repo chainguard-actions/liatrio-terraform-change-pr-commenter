@@ -1,0 +1,57 @@
+name: Test expand-comment option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action-expanded
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "true"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "false"
+
+      - name: Assert comment-body contains open details tag when expand-comment is true
+        env:
+          ACTUAL: ${{ steps.action-expanded.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "<details open>"; then
+            echo "FAIL: expected '<details open>' in comment-body when expand-comment=true"
+            exit 1
+          fi
+          echo "PASS: '<details open>' found in comment-body"
+
+      - id: action-collapsed
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "false"
+
+      - name: Assert comment-body does not contain open details tag when expand-comment is false
+        env:
+          ACTUAL: ${{ steps.action-collapsed.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if echo "$ACTUAL" | grep -q "<details open>"; then
+            echo "FAIL: did not expect '<details open>' in comment-body when expand-comment=false"
+            exit 1
+          fi
+          echo "PASS: '<details open>' not found in comment-body as expected"

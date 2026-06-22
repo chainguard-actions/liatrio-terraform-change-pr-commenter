@@ -1,0 +1,56 @@
+name: Test plan with no resource changes
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_no_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "false"
+
+      - name: Assert comment-body is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: comment-body output is empty"
+            exit 1
+          fi
+          echo "PASS: comment-body is non-empty"
+
+      - name: Assert comment-body contains plan summary with zero changes
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "Terraform Plan:"; then
+            echo "FAIL: expected 'Terraform Plan:' in comment-body"
+            exit 1
+          fi
+          echo "PASS: Terraform Plan summary found"
+
+      - name: Assert comment-body shows 0 to be created
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "0 to be created"; then
+            echo "FAIL: expected '0 to be created' in comment-body"
+            exit 1
+          fi
+          echo "PASS: 0 to be created found in comment-body"

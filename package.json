@@ -1,0 +1,64 @@
+{
+  "name": "terraform-change-pr-commenter",
+  "version": "1.14.1",
+  "description": "GitHub Action to read changes from Terraform plan JSON, summarize changes, and post them in a GitHub Pull Request Comment",
+  "main": "index.js",
+  "scripts": {
+    "build": "ncc build index.js --out dist --license licenses.txt",
+    "semantic-release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liatrio/terraform-change-pr-commenter.git"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "yarn.lock",
+            "dist",
+            "CHANGELOG.md",
+            "README.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      "@semantic-release/github"
+    ]
+  },
+  "keywords": [],
+  "author": "Liatrio",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/liatrio/terraform-change-pr-commenter/issues"
+  },
+  "homepage": "https://github.com/liatrio/terraform-change-pr-commenter#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@vercel/ncc": "^0.33.1",
+    "semantic-release": "^24.2.6"
+  },
+  "dependencies": {
+    "@actions/core": "^1.9.1",
+    "@actions/github": "^5.0.0"
+  }
+}

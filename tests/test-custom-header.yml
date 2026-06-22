@@ -1,0 +1,46 @@
+name: Test custom comment header
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "My Custom Header"
+          comment-footer: "My Custom Footer"
+          quiet: "false"
+          log-changed-resources: "false"
+
+      - name: Assert comment-body contains custom header
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "My Custom Header"; then
+            echo "FAIL: expected 'My Custom Header' in comment-body"
+            exit 1
+          fi
+          echo "PASS: custom header found in comment-body"
+
+      - name: Assert comment-body contains custom footer
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "My Custom Footer"; then
+            echo "FAIL: expected 'My Custom Footer' in comment-body"
+            exit 1
+          fi
+          echo "PASS: custom footer found in comment-body"

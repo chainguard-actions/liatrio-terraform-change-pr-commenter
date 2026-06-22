@@ -1,0 +1,105 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.0",
+  "planned_values": {
+    "root_module": {}
+  },
+  "resource_changes": [
+    {
+      "address": "aws_instance.web",
+      "module_address": null,
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "web",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "ami": "ami-12345678",
+          "instance_type": "t2.micro"
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_s3_bucket.data",
+      "module_address": null,
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "data",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "bucket": "my-data-bucket",
+          "versioning": false
+        },
+        "after": {
+          "bucket": "my-data-bucket",
+          "versioning": true
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_security_group.old",
+      "module_address": null,
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "old",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete"],
+        "before": {
+          "name": "old-sg"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_db_instance.main",
+      "module_address": null,
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "main",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete", "create"],
+        "before": {
+          "identifier": "main-db"
+        },
+        "after": {
+          "identifier": "main-db-new"
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_vpc.existing",
+      "module_address": null,
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "existing",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["no-op"],
+        "before": {
+          "cidr_block": "10.0.0.0/16"
+        },
+        "after": {
+          "cidr_block": "10.0.0.0/16"
+        },
+        "after_unknown": {}
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {}
+  },
+  "timestamp": "2024-01-01T00:00:00Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

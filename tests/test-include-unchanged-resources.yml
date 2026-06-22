@@ -1,0 +1,69 @@
+name: Test include-unchanged-resources option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action-with-unchanged
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "false"
+          include-unchanged-resources: "true"
+
+      - name: Assert comment-body contains unchanged resources section
+        env:
+          ACTUAL: ${{ steps.action-with-unchanged.outputs.comment-body }}
+        run: |
+          echo "actual comment-body:"
+          echo "$ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "Unchanged resources"; then
+            echo "FAIL: expected 'Unchanged resources' section in comment-body"
+            exit 1
+          fi
+          echo "PASS: 'Unchanged resources' section found in comment-body"
+
+      - name: Assert unchanged resource aws_vpc.existing is listed
+        env:
+          ACTUAL: ${{ steps.action-with-unchanged.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if ! echo "$ACTUAL" | grep -q "aws_vpc.existing"; then
+            echo "FAIL: expected 'aws_vpc.existing' in unchanged resources"
+            exit 1
+          fi
+          echo "PASS: aws_vpc.existing found in unchanged resources"
+
+      - id: action-without-unchanged
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
+          github-token: fake-token-for-testing
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+          comment-header: "Terraform Plan Changes"
+          quiet: "false"
+          log-changed-resources: "false"
+          include-unchanged-resources: "false"
+
+      - name: Assert comment-body does not contain unchanged resources section when disabled
+        env:
+          ACTUAL: ${{ steps.action-without-unchanged.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Unchanged resources"; then
+            echo "FAIL: did not expect 'Unchanged resources' section when include-unchanged-resources=false"
+            exit 1
+          fi
+          echo "PASS: 'Unchanged resources' section not found as expected"
