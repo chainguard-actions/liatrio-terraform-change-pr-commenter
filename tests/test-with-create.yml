@@ -1,0 +1,55 @@
+name: Test with resources to create
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture plan file
+        run: cp "$GITHUB_WORKSPACE/tests/fixtures/tf_with_create.json" "$GITHUB_WORKSPACE/tfplan.json"
+
+      - id: action
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+
+      - name: Assert comment-body contains create section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Resources to create"; then
+            echo "PASS: 'Resources to create' found in comment-body"
+          else
+            echo "FAIL: expected 'Resources to create' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains the resource address
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "aws_s3_bucket.example"; then
+            echo "PASS: resource address found in comment-body"
+          else
+            echo "FAIL: expected 'aws_s3_bucket.example' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains plan summary with create count
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "1 to be created"; then
+            echo "PASS: plan summary with create count found"
+          else
+            echo "FAIL: expected '1 to be created' in comment-body"
+            exit 1
+          fi

@@ -1,0 +1,82 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.10.5",
+  "planned_values": {
+    "root_module": {}
+  },
+  "resource_changes": [
+    {
+      "address": "aws_s3_bucket.new_bucket",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "new_bucket",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "bucket": "new-bucket"
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_s3_bucket.old_bucket",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "old_bucket",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete"],
+        "before": {
+          "bucket": "old-bucket"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_s3_bucket.updated_bucket",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "updated_bucket",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "bucket": "updated-bucket",
+          "acl": "private"
+        },
+        "after": {
+          "bucket": "updated-bucket",
+          "acl": "public-read"
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_instance.replaced",
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "replaced",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete", "create"],
+        "before": {
+          "instance_type": "t2.micro"
+        },
+        "after": {
+          "instance_type": "t3.micro"
+        },
+        "after_unknown": {}
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {}
+  },
+  "timestamp": "2025-01-01T00:00:00Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

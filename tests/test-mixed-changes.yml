@@ -1,0 +1,109 @@
+name: Test with mixed resource changes
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture plan file
+        run: cp "$GITHUB_WORKSPACE/tests/fixtures/tf_mixed_changes.json" "$GITHUB_WORKSPACE/tfplan.json"
+
+      - id: action
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
+          expand-comment: "false"
+          include-plan-job-summary: "false"
+
+      - name: Assert comment-body contains plan summary
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Terraform Plan:"; then
+            echo "PASS: 'Terraform Plan:' found in comment-body"
+          else
+            echo "FAIL: expected 'Terraform Plan:' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains create section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Resources to create"; then
+            echo "PASS: 'Resources to create' found"
+          else
+            echo "FAIL: expected 'Resources to create' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains delete section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Resources to delete"; then
+            echo "PASS: 'Resources to delete' found"
+          else
+            echo "FAIL: expected 'Resources to delete' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains update section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Resources to update"; then
+            echo "PASS: 'Resources to update' found"
+          else
+            echo "FAIL: expected 'Resources to update' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert comment-body contains replace section
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Resources to replace"; then
+            echo "PASS: 'Resources to replace' found"
+          else
+            echo "FAIL: expected 'Resources to replace' in comment-body"
+            exit 1
+          fi
+
+      - name: Assert plan summary counts are correct
+        env:
+          ACTUAL: ${{ steps.action.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "1 to be created"; then
+            echo "PASS: create count correct"
+          else
+            echo "FAIL: expected '1 to be created' in comment-body"
+            exit 1
+          fi
+          if echo "$ACTUAL" | grep -q "1 to be deleted"; then
+            echo "PASS: delete count correct"
+          else
+            echo "FAIL: expected '1 to be deleted' in comment-body"
+            exit 1
+          fi
+          if echo "$ACTUAL" | grep -q "1 to be updated"; then
+            echo "PASS: update count correct"
+          else
+            echo "FAIL: expected '1 to be updated' in comment-body"
+            exit 1
+          fi
+          if echo "$ACTUAL" | grep -q "1 to be replaced"; then
+            echo "PASS: replace count correct"
+          else
+            echo "FAIL: expected '1 to be replaced' in comment-body"
+            exit 1
+          fi

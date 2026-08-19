@@ -1,57 +1,56 @@
-name: Test expand-comment option
+name: Test expand comment option
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_EVENT_NAME: push
-      GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture plan file
+        run: cp "$GITHUB_WORKSPACE/tests/fixtures/tf_with_create.json" "$GITHUB_WORKSPACE/tfplan.json"
 
       - id: action-expanded
         uses: .
         with:
-          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
-          github-token: fake-token-for-testing
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
           expand-comment: "true"
-          include-plan-job-summary: "false"
-          comment-header: "Terraform Plan Changes"
-          quiet: "false"
-          log-changed-resources: "false"
 
-      - name: Assert comment-body contains open details tag when expand-comment is true
+      - name: Assert comment-body has details open attribute when expand-comment is true
         env:
           ACTUAL: ${{ steps.action-expanded.outputs.comment-body }}
         run: |
-          echo "actual comment-body:"
-          echo "$ACTUAL"
-          if ! echo "$ACTUAL" | grep -q "<details open>"; then
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "<details open>"; then
+            echo "PASS: '<details open>' found in comment-body"
+          else
             echo "FAIL: expected '<details open>' in comment-body when expand-comment=true"
             exit 1
           fi
-          echo "PASS: '<details open>' found in comment-body"
+
+      - name: Copy fixture plan file again
+        run: cp "$GITHUB_WORKSPACE/tests/fixtures/tf_with_create.json" "$GITHUB_WORKSPACE/tfplan.json"
 
       - id: action-collapsed
         uses: .
         with:
-          json-file: ${{ github.workspace }}/tests/fixtures/tf_with_changes.json
-          github-token: fake-token-for-testing
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
           expand-comment: "false"
-          include-plan-job-summary: "false"
-          comment-header: "Terraform Plan Changes"
-          quiet: "false"
-          log-changed-resources: "false"
 
-      - name: Assert comment-body does not contain open details tag when expand-comment is false
+      - name: Assert comment-body does not have details open attribute when expand-comment is false
         env:
           ACTUAL: ${{ steps.action-collapsed.outputs.comment-body }}
         run: |
-          echo "actual comment-body:"
-          echo "$ACTUAL"
+          echo "actual: $ACTUAL"
           if echo "$ACTUAL" | grep -q "<details open>"; then
-            echo "FAIL: did not expect '<details open>' in comment-body when expand-comment=false"
+            echo "FAIL: '<details open>' should NOT be in comment-body when expand-comment=false"
             exit 1
           fi
-          echo "PASS: '<details open>' not found in comment-body as expected"
+          if echo "$ACTUAL" | grep -qE "<details[ >]"; then
+            echo "PASS: '<details>' (without open) found in comment-body"
+          else
+            echo "FAIL: expected '<details>' in comment-body"
+            exit 1
+          fi

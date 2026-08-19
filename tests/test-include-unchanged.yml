@@ -1,0 +1,92 @@
+name: Test include unchanged resources option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create plan with no-op resource
+        run: |
+          cat > "$GITHUB_WORKSPACE/tfplan.json" << 'EOF'
+          {
+            "format_version": "1.2",
+            "terraform_version": "1.10.5",
+            "planned_values": {
+              "root_module": {}
+            },
+            "resource_changes": [
+              {
+                "address": "aws_s3_bucket.unchanged_bucket",
+                "mode": "managed",
+                "type": "aws_s3_bucket",
+                "name": "unchanged_bucket",
+                "provider_name": "registry.terraform.io/hashicorp/aws",
+                "change": {
+                  "actions": ["no-op"],
+                  "before": {
+                    "bucket": "unchanged-bucket"
+                  },
+                  "after": {
+                    "bucket": "unchanged-bucket"
+                  },
+                  "after_unknown": {}
+                }
+              },
+              {
+                "address": "aws_s3_bucket.new_bucket",
+                "mode": "managed",
+                "type": "aws_s3_bucket",
+                "name": "new_bucket",
+                "provider_name": "registry.terraform.io/hashicorp/aws",
+                "change": {
+                  "actions": ["create"],
+                  "before": null,
+                  "after": {
+                    "bucket": "new-bucket"
+                  },
+                  "after_unknown": {}
+                }
+              }
+            ],
+            "configuration": {
+              "root_module": {}
+            },
+            "timestamp": "2025-01-01T00:00:00Z",
+            "applyable": true,
+            "complete": true,
+            "errored": false
+          }
+          EOF
+
+      - id: action-with-unchanged
+        uses: .
+        with:
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
+          include-unchanged-resources: "true"
+
+      - name: Assert comment-body contains unchanged resources section
+        env:
+          ACTUAL: ${{ steps.action-with-unchanged.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "Unchanged resources"; then
+            echo "PASS: 'Unchanged resources' found in comment-body"
+          else
+            echo "FAIL: expected 'Unchanged resources' in comment-body when include-unchanged-resources=true"
+            exit 1
+          fi
+
+      - name: Assert unchanged resource address is in comment-body
+        env:
+          ACTUAL: ${{ steps.action-with-unchanged.outputs.comment-body }}
+        run: |
+          echo "actual: $ACTUAL"
+          if echo "$ACTUAL" | grep -q "aws_s3_bucket.unchanged_bucket"; then
+            echo "PASS: unchanged resource address found in comment-body"
+          else
+            echo "FAIL: expected 'aws_s3_bucket.unchanged_bucket' in comment-body"
+            exit 1
+          fi

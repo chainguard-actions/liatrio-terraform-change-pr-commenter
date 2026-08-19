@@ -1,33 +1,30 @@
-name: Test quiet mode with no changes skips comment
+name: Test quiet mode with no changes
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_EVENT_NAME: push
-      GITHUB_REF: refs/heads/main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture plan file
+        run: cp "$GITHUB_WORKSPACE/tests/fixtures/tf_no_changes.json" "$GITHUB_WORKSPACE/tfplan.json"
 
       - id: action
         uses: .
         with:
-          json-file: ${{ github.workspace }}/tests/fixtures/tf_no_changes.json
-          github-token: fake-token-for-testing
-          expand-comment: "false"
-          include-plan-job-summary: "false"
-          comment-header: "Terraform Plan Changes"
+          json-file: ${{ github.workspace }}/tfplan.json
+          github-token: ${{ github.token }}
           quiet: "true"
-          log-changed-resources: "false"
 
       - name: Assert comment-body is empty in quiet mode with no changes
         env:
           ACTUAL: ${{ steps.action.outputs.comment-body }}
         run: |
-          echo "actual comment-body: '$ACTUAL'"
-          if [ -n "$ACTUAL" ]; then
+          echo "actual: '$ACTUAL'"
+          if [ -z "$ACTUAL" ]; then
+            echo "PASS: comment-body is empty as expected in quiet mode with no changes"
+          else
             echo "FAIL: expected empty comment-body in quiet mode with no changes, got: $ACTUAL"
             exit 1
           fi
-          echo "PASS: comment-body is empty as expected in quiet mode with no changes"
