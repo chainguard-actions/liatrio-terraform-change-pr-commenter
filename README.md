@@ -6,9 +6,9 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.14.2 | [`v1.14.2`](https://github.com/chainguard-actions/liatrio-terraform-change-pr-commenter/tree/v1.14.2) | [`c8ccafe`](https://github.com/liatrio/terraform-change-pr-commenter/commit/c8ccafe4ce3ed9547b2d3517dde0f97be56893f8) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v1.14.2 | [`v1.14.2`](https://github.com/chainguard-actions/liatrio-terraform-change-pr-commenter/tree/v1.14.2) | [`c8ccafe`](https://github.com/liatrio/terraform-change-pr-commenter/commit/c8ccafe4ce3ed9547b2d3517dde0f97be56893f8) | [`HARDENING.md`](https://github.com/chainguard-actions/liatrio-terraform-change-pr-commenter/blob/v1.14.2/HARDENING.md) |
 
 ## Privacy
 
