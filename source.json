@@ -4,8 +4,13 @@
   "version": "v1.14.2",
   "commit_sha": "c8ccafe4ce3ed9547b2d3517dde0f97be56893f8",
   "url": "https://github.com/liatrio/terraform-change-pr-commenter",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/liatrio/terraform-change-pr-commenter/v1.14.2/sha256-6a21db1c326bb59dcf5f0cd080254be31d10a6845c70fac9cbe66b639f5a68af.tar.gz",
+    "sha256": "6a21db1c326bb59dcf5f0cd080254be31d10a6845c70fac9cbe66b639f5a68af",
+    "size_bytes": 329319
+  }
 }
